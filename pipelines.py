@@ -24,9 +24,10 @@ class DataBasePipeline(object):
     def process_item(self, item, spider):
         a = Article(title=item["title"].encode("utf-8"),
                     url=item["url"],
-                    body=item["body"].encode("utf-8"),
+                    content=item["content"].encode("utf-8"),
                     publish_time=item["publish_time"].encode("utf-8"),
-                    source_site=item["source_site"].encode("utf-8"))
+                    publish_user=item["publish_user"].encode("utf-8"),
+                    folder_id=2)
         self.session.add(a)
         self.session.commit()
 

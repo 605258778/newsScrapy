@@ -5,11 +5,30 @@ from scrapy.spiders import CrawlSpider, Rule
 from scrapy.linkextractors import LinkExtractor
 
 class Article(scrapy.Item):
+    folder_id = scrapy.Field()
     title = scrapy.Field()
-    url = scrapy.Field()
-    body = scrapy.Field()
+    content = scrapy.Field()
+    count_view = scrapy.Field()
+    count_comment = scrapy.Field()
+    type = scrapy.Field()
+    status = scrapy.Field()
+    is_comment = scrapy.Field()
+    is_recommend = scrapy.Field()
+    sort = scrapy.Field()
+    jump_url = scrapy.Field()
+    image_url = scrapy.Field()
+    image_net_url = scrapy.Field()
+    file_url = scrapy.Field()
+    file_name = scrapy.Field()
+    approve_status = scrapy.Field()
     publish_time = scrapy.Field()
-    source_site = scrapy.Field()
+    publish_user = scrapy.Field()
+    start_time = scrapy.Field()
+    end_time = scrapy.Field()
+    update_time = scrapy.Field()
+    create_time = scrapy.Field()
+    create_id = scrapy.Field()
+    url = scrapy.Field()
 
 class DeepSpider(CrawlSpider):
     name = "Deep"
@@ -44,12 +63,16 @@ class DeepSpider(CrawlSpider):
         article["title"] = title[0] if title else ""
 
         body = response.xpath(self.rule.body_xpath).extract()
-        article["content"] =  '\n'.join(body) if body else ""
+        articleContent =  '\n'.join(body) if body else ""
+        if(articleContent!=""):
+            articleContent = articleContent.replace('<img src="/','<img src="http://'+self.rule.allow_domains+'/')
+        article["content"] =  articleContent
 
         publish_time = response.xpath(self.rule.publish_time_xpath).extract()
         article["publish_time"] = (publish_time[0].decode('utf8')[5:15].encode('utf8') if (publish_time[0].find("更新时间")!=-1) else publish_time[0]) if publish_time else ""
 
         source_site = response.xpath(self.rule.source_site_xpath).extract()
-        article["source_site"] = source_site[0] if source_site else ""
 
+        article["publish_user"] = source_site[0][source_site[0].find("作者:")+3:source_site[0].find("来源")-2]
+        article["folder_id"] = 2
         return article
