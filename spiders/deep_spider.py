@@ -76,3 +76,5 @@ class DeepSpider(CrawlSpider):
         article["publish_user"] = source_site[0][source_site[0].find("作者:")+3:source_site[0].find("来源")-2]
         article["folder_id"] = 2
         return article
+    def close_spider(self,spider):
+        self.file.close()
