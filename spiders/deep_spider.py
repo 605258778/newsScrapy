@@ -58,23 +58,38 @@ class DeepSpider(CrawlSpider):
         article = Article()
 
         article["url"] = response.url
+        if self.rule.allow_domains == "gzfip.cn":
+            title = response.xpath(self.rule.title_xpath).extract()
+            article["title"] = title[0] if title else ""
 
-        title = response.xpath(self.rule.title_xpath).extract()
-        article["title"] = title[0] if title else ""
+            body = response.xpath(self.rule.body_xpath).extract()
+            articleContent =  '\n'.join(body) if body else ""
+            if(articleContent!=""):
+                articleContent = articleContent.replace('<img src="/','<img src="http://'+self.rule.allow_domains+'/')
+            article["content"] =  articleContent
 
-        body = response.xpath(self.rule.body_xpath).extract()
-        articleContent =  '\n'.join(body) if body else ""
-        if(articleContent!=""):
-            articleContent = articleContent.replace('<img src="/','<img src="http://'+self.rule.allow_domains+'/')
-        article["content"] =  articleContent
+            publish_time = response.xpath(self.rule.publish_time_xpath).extract()
+            article["publish_time"] = (publish_time[0].decode('utf8')[5:15].encode('utf8') if (publish_time[0].find("更新时间")!=-1) else publish_time[0]) if publish_time else ""
 
-        publish_time = response.xpath(self.rule.publish_time_xpath).extract()
-        article["publish_time"] = (publish_time[0].decode('utf8')[5:15].encode('utf8') if (publish_time[0].find("更新时间")!=-1) else publish_time[0]) if publish_time else ""
+            source_site = response.xpath(self.rule.source_site_xpath).extract()
 
-        source_site = response.xpath(self.rule.source_site_xpath).extract()
+            article["publish_user"] = source_site[0][source_site[0].find("作者:")+3:source_site[0].find("来源")-2]
+            article["folder_id"] = 2
+        elif self.rule.allow_domains == "forestry.gov.cn":
+            title = response.xpath(self.rule.title_xpath).extract()
+            article["title"] = title[0] if title else ""
 
-        article["publish_user"] = source_site[0][source_site[0].find("作者:")+3:source_site[0].find("来源")-2]
-        article["folder_id"] = 2
+            body = response.xpath(self.rule.body_xpath).extract()
+            articleContent =  '\n'.join(body) if body else ""
+            if(articleContent!=""):
+                articleContent = articleContent.replace('alt src="/','alt src="http://'+self.rule.allow_domains+'/')
+            article["content"] =  articleContent
+
+            publish_time = response.xpath(self.rule.publish_time_xpath).extract()
+            article["publish_time"] = publish_time[0] if publish_time else ""
+
+            source_site = response.xpath(self.rule.source_site_xpath).extract()
+
+            article["publish_user"] = ""
+            article["folder_id"] = 2
         return article
-    def close_spider(self,spider):
-        self.file.close()
